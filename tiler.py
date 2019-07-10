@@ -7,10 +7,10 @@ import pygame as pg
 import cv2
 
 
-def Fill(Surf, Point, Color):
+def Fill(Surf, Point, Color, threshold=10):
     arr = pg.surfarray.array3d(Surf)    # copy array from surface
     swapPoint = (Point[1], Point[0])        # swap X and Y
-    cv2.floodFill(arr, None, swapPoint, Color, (10,10,10), (10,10,10))
+    cv2.floodFill(arr, None, swapPoint, Color, (threshold, threshold, threshold), (threshold, threshold, threshold))
     pg.surfarray.blit_array(Surf, arr)
 
 
@@ -26,7 +26,6 @@ def draw_color_list(blocksize=10):
             continue
         if cname.startswith('gray'):
             continue
-        print(cname)
         ccolor = _colour_names[cname]
         posy = (idx * blocksize) % ysize
         posx = int(idx * blocksize / ysize)
@@ -75,8 +74,16 @@ def replace_color(img, orig_color, new_color, dist=200):
 
 
 pg.init()
+pg.font.init()
+
+# tile size for main design
 SIZE = 30
+# number of tiles on screen in each axis
 num_tiles = 23
+# threshold for adaptive fill
+threshold = 10
+
+
 # 1000 * 1000 is main screen, then 2 * SIZE blocks, then color pallette
 # max_map_x = int(22.5 * SIZE)
 max_map_x = int(num_tiles * SIZE)
@@ -100,6 +107,10 @@ pg.draw.line(room, (255, 255, 255), (18 * SIZE, 0), (18 * SIZE, 22 * SIZE), 2)
 
 screen.fill(BG_COLOR)
 
+# the font for showing the adaptive threshold for floodfill
+myfont = pg.font.SysFont('Comic Sans MS', 20)
+textsurface = myfont.render('%s' % threshold, False, (0, 0, 0))
+
 # draw the tile list
 for idx, cimage in enumerate(images):
     cy = idx % num_tiles
@@ -112,6 +123,15 @@ draw_color_list()
 # draw_color_pallette(size=SIZE)
 pg.display.flip()
 
+print('keyboard shortcuts:')
+print('r to reset current tile to loaded image')
+print('f to fill all blank tiles with current image')
+print('left/right to rotate current tile')
+print('up/down to select next/prev tile')
+print('space to redraw with modified tiles')
+print('d/e to increase/decrease fill threshold')
+print('to fill a tile, select it, select a color and then click inside the tile. use r if did a mistake')
+
 done = False
 rotation = 0
 cimagenum = 0
@@ -119,6 +139,7 @@ cimage = images[cimagenum]
 draw_select = True
 while not done:
     redraw = False
+    draw_color = False
     for event in pg.event.get():
         if event.type == pg.QUIT:
             done = True
@@ -152,6 +173,12 @@ while not done:
             if event.key == pg.K_LEFT:
                 rotation = (rotation + 90) % 360
                 cimage = pg.transform.rotate(images[cimagenum], rotation)
+            if event.key == pg.K_d:
+                threshold = threshold - 1
+                draw_color = True
+            if event.key == pg.K_e:
+                threshold = threshold + 1
+                draw_color = True
         elif pg.mouse.get_pressed()[0]:
             pos = pg.mouse.get_pos()
             if pos[0] < max_map_x:
@@ -176,7 +203,7 @@ while not done:
                 # selected a color
                 if pos[1] <= max_map_y - 3 * SIZE:
                     selected_color = screen.get_at(pos)
-                    pg.draw.rect(screen, selected_color, pg.Rect(max_map_x + 2 * SIZE, max_map_y - 3 * SIZE, 2 * SIZE, SIZE), 0)
+                    draw_color = True
                 # clicked on the selected zoomed tile - change color
                 else:
                     cimage = images[cimagenum]
@@ -185,10 +212,13 @@ while not done:
                     ipos[0] = int(ipos[0] / 2)
                     ipos[1] = ipos[1] - (max_map_y - 2 * SIZE)
                     ipos[1] = int(ipos[1] / 2)
-                    print(ipos)
-                    Fill(cimage, ipos, selected_color)
+                    Fill(cimage, ipos, selected_color, threshold=threshold)
                     # replace_color(cimage, screen.get_at(pos), selected_color)
                     draw_select = True
+        if draw_color:
+            pg.draw.rect(screen, selected_color, pg.Rect(max_map_x + 2 * SIZE, max_map_y - 3 * SIZE, 2 * SIZE, SIZE), 0)
+            textsurface = myfont.render('%s' % threshold, False, (0, 0, 0))
+            screen.blit(textsurface, (max_map_x + 2.5 * SIZE, max_map_y - 3 * SIZE))
         if draw_select:
             # prepare the zoomed selected image (rotation etc.)
             timage = cimage
