@@ -10,7 +10,7 @@ import cv2
 def Fill(Surf, Point, Color):
     arr = pg.surfarray.array3d(Surf)    # copy array from surface
     swapPoint = (Point[1], Point[0])        # swap X and Y
-    cv2.floodFill(arr, None, swapPoint, Color)
+    cv2.floodFill(arr, None, swapPoint, Color, (10,10,10), (10,10,10))
     pg.surfarray.blit_array(Surf, arr)
 
 
@@ -180,7 +180,13 @@ while not done:
                 # clicked on the selected zoomed tile - change color
                 else:
                     cimage = images[cimagenum]
-                    Fill(img, pos, selected_color)
+                    ipos = [pos[0], pos[1]]
+                    ipos[0] = ipos[0] - max_map_x - 2 * SIZE
+                    ipos[0] = int(ipos[0] / 2)
+                    ipos[1] = ipos[1] - (max_map_y - 2 * SIZE)
+                    ipos[1] = int(ipos[1] / 2)
+                    print(ipos)
+                    Fill(cimage, ipos, selected_color)
                     # replace_color(cimage, screen.get_at(pos), selected_color)
                     draw_select = True
         if draw_select:
