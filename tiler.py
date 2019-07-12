@@ -4,7 +4,7 @@ import os
 
 import numpy as np
 import pygame as pg
-import cv2
+# import cv2
 
 
 def Fill(Surf, Point, Color, threshold=10):
@@ -63,7 +63,7 @@ def color_dist(color1, color2):
     return (color1.r - color2.r)**2 + (color1.g - color2.g)**2 + (color1.b - color2.b)**2
 
 
-def replace_color(img, orig_color, new_color, dist=200):
+def replace_color(img, orig_color, new_color, dist=4):
     for x in range(img.get_width()):
         for y in range(img.get_height()):
             ccolor = img.get_at((x, y))
@@ -212,8 +212,8 @@ while not done:
                     ipos[0] = int(ipos[0] / 2)
                     ipos[1] = ipos[1] - (max_map_y - 2 * SIZE)
                     ipos[1] = int(ipos[1] / 2)
-                    Fill(cimage, ipos, selected_color, threshold=threshold)
-                    # replace_color(cimage, screen.get_at(pos), selected_color)
+                    # Fill(cimage, ipos, selected_color, threshold=threshold)
+                    replace_color(cimage, screen.get_at(pos), selected_color)
                     draw_select = True
         if draw_color:
             pg.draw.rect(screen, selected_color, pg.Rect(max_map_x + 2 * SIZE, max_map_y - 3 * SIZE, 2 * SIZE, SIZE), 0)
