@@ -4,10 +4,10 @@ import os
 
 import numpy as np
 import pygame as pg
-# import cv2
 
 
 def Fill(Surf, Point, Color, threshold=10):
+    import cv2
     arr = pg.surfarray.array3d(Surf)    # copy array from surface
     swapPoint = (Point[1], Point[0])        # swap X and Y
     cv2.floodFill(arr, None, swapPoint, Color, (threshold, threshold, threshold), (threshold, threshold, threshold))
