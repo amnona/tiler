@@ -132,6 +132,8 @@ print('up/down to select next/prev tile')
 print('space to redraw with modified tiles')
 print('d/e to increase/decrease fill threshold')
 print('to fill a tile, select it, select a color and then click inside the tile. use r if did a mistake')
+print('l to load saved pattern')
+print('s to save current pattern (colors will not be saved)')
 
 done = False
 rotation = 0
