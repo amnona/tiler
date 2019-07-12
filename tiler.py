@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import subprocess
 
 import numpy as np
 import pygame as pg
@@ -159,6 +160,23 @@ while not done:
                 redraw = True
             if event.key == pg.K_SPACE:
                 redraw = True
+            if event.key == pg.K_s:
+                a = subprocess.run(['python', 'file_dlg.py', '--save'], capture_output=True)
+                if a.returncode == 0:
+                    filepath = a.stdout.decode().strip()
+                    np.savez(filepath, tiles=tiles, rotations=rotations)
+                    print('saved')
+            if event.key == pg.K_l:
+                a = subprocess.run(['python', 'file_dlg.py'], capture_output=True)
+                if a.returncode == 0:
+                    filepath = a.stdout.decode().strip()
+                    fl = np.load(filepath)
+                    print(fl)
+                    print(fl.files)
+                    tiles = fl['tiles']
+                    rotations = fl['rotations']
+                    print('loaded')
+                    redraw = True
             if event.key == pg.K_UP:
                 cimagenum += 1
                 cimagenum = cimagenum % len(images)
