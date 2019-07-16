@@ -15,6 +15,15 @@ def Fill(Surf, Point, Color, threshold=10):
     pg.surfarray.blit_array(Surf, arr)
 
 
+def draw_tile_list():
+    # draw the tile list
+    for idx, cimage in enumerate(images):
+        cy = idx % num_tiles
+        cx = int(idx / num_tiles)
+        screen.blit(cimage, (max_map_x + cx * SIZE, cy * SIZE))
+        # screen.blit(cimage, (max_map_x, idx * SIZE))
+
+
 def draw_color_list(blocksize=10):
     _colour_names = pg.colordict.THECOLORS
     # _colour_sort = sorted(_colour_names, key=lambda name: name[0])
@@ -38,7 +47,7 @@ def load_images(image_dir='images', size=50):
     images = []
     images.append(pg.Surface((size, size)))
     for cimagename in os.listdir(image_dir):
-        if not cimagename.endswith('.jpg'):
+        if not cimagename.endswith('.png'):
             continue
         cimage = pg.image.load(os.path.join(image_dir, cimagename)).convert()
         cimage = pg.transform.scale(cimage, (size, size))
@@ -112,12 +121,7 @@ screen.fill(BG_COLOR)
 myfont = pg.font.SysFont('Comic Sans MS', 20)
 textsurface = myfont.render('%s' % threshold, False, (0, 0, 0))
 
-# draw the tile list
-for idx, cimage in enumerate(images):
-    cy = idx % num_tiles
-    cx = int(idx / num_tiles)
-    screen.blit(cimage, (max_map_x + cx * SIZE, cy * SIZE))
-    # screen.blit(cimage, (max_map_x, idx * SIZE))
+draw_tile_list()
 
 draw_color_list()
 
@@ -130,10 +134,11 @@ print('f to fill all blank tiles with current image')
 print('left/right to rotate current tile')
 print('up/down to select next/prev tile')
 print('space to redraw with modified tiles')
-print('d/e to increase/decrease fill threshold')
+print('q/a to increase/decrease fill threshold')
 print('to fill a tile, select it, select a color and then click inside the tile. use r if did a mistake')
 print('l to load saved pattern')
 print('s to save current pattern (colors will not be saved)')
+print('d to duplicate a tile')
 
 done = False
 rotation = 0
@@ -166,18 +171,19 @@ while not done:
                 a = subprocess.run(['python', 'file_dlg.py', '--save'], capture_output=True)
                 if a.returncode == 0:
                     filepath = a.stdout.decode().strip()
-                    np.savez(filepath, tiles=tiles, rotations=rotations)
+                    np.savez(filepath, tiles=tiles, rotations=rotations, images=images, orig_images=orig_images)
                     print('saved')
             if event.key == pg.K_l:
                 a = subprocess.run(['python', 'file_dlg.py'], capture_output=True)
                 if a.returncode == 0:
                     filepath = a.stdout.decode().strip()
                     fl = np.load(filepath)
-                    print(fl)
-                    print(fl.files)
                     tiles = fl['tiles']
                     rotations = fl['rotations']
+                    images = fl['images']
+                    orig_images = fl['orig_images']
                     print('loaded')
+                    draw_tile_list()
                     redraw = True
             if event.key == pg.K_UP:
                 cimagenum += 1
@@ -193,12 +199,16 @@ while not done:
             if event.key == pg.K_LEFT:
                 rotation = (rotation + 90) % 360
                 cimage = pg.transform.rotate(images[cimagenum], rotation)
-            if event.key == pg.K_d:
+            if event.key == pg.K_q:
                 threshold = threshold - 1
                 draw_color = True
-            if event.key == pg.K_e:
+            if event.key == pg.K_a:
                 threshold = threshold + 1
                 draw_color = True
+            if event.key == pg.K_d:
+                images.append(images[cimagenum].copy())
+                orig_images.append(orig_images[cimagenum].copy())
+                draw_tile_list()
         elif pg.mouse.get_pressed()[0]:
             pos = pg.mouse.get_pos()
             if pos[0] < max_map_x:
@@ -235,6 +245,7 @@ while not done:
                     # Fill(cimage, ipos, selected_color, threshold=threshold)
                     replace_color(cimage, screen.get_at(pos), selected_color)
                     draw_select = True
+                    draw_tile_list()
         if draw_color:
             pg.draw.rect(screen, selected_color, pg.Rect(max_map_x + 2 * SIZE, max_map_y - 3 * SIZE, 2 * SIZE, SIZE), 0)
             textsurface = myfont.render('%s' % threshold, False, (0, 0, 0))
@@ -245,6 +256,7 @@ while not done:
             timage = pg.transform.scale(timage, (SIZE * 2, SIZE * 2))
             # draw the zoomed selected image
             screen.blit(timage, (max_map_x + 2 * SIZE, max_map_y - SIZE * 2))
+            draw_tile_list()
             draw_select = False
         if redraw:
             print('redraw')
