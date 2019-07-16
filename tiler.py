@@ -45,7 +45,7 @@ def draw_color_list(blocksize=10):
 
 def load_images(image_dir='images', size=50):
     images = []
-    images.append(pg.Surface((size, size)))
+    images.append(pg.Surface((size, size), 0, 32).convert())
     for cimagename in os.listdir(image_dir):
         if not cimagename.endswith('.png'):
             continue
@@ -171,7 +171,11 @@ while not done:
                 a = subprocess.run(['python', 'file_dlg.py', '--save'], capture_output=True)
                 if a.returncode == 0:
                     filepath = a.stdout.decode().strip()
-                    np.savez(filepath, tiles=tiles, rotations=rotations, images=images, orig_images=orig_images)
+                    new_images = [pg.image.tostring(x, 'RGB') for x in images]
+                    # for x in new_images:
+                    #     print([len(x) for x in new_images])
+                    np.savez(filepath, tiles=tiles, rotations=rotations, images=new_images)
+                    np.savez(filepath, tiles=tiles, rotations=rotations, images=new_images)
                     print('saved')
             if event.key == pg.K_l:
                 a = subprocess.run(['python', 'file_dlg.py'], capture_output=True)
@@ -180,8 +184,10 @@ while not done:
                     fl = np.load(filepath)
                     tiles = fl['tiles']
                     rotations = fl['rotations']
-                    images = fl['images']
-                    orig_images = fl['orig_images']
+                    # new_images = fl['images']
+                    # print([len(x) for x in new_images])
+                    # images = [pg.image.fromstring(x, (SIZE, SIZE), 'RGB') for x in new_images]
+                    # orig_images = fl['orig_images']
                     print('loaded')
                     draw_tile_list()
                     redraw = True
