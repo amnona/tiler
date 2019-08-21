@@ -87,7 +87,7 @@ pg.init()
 pg.font.init()
 
 # tile size for main design
-SIZE = 30
+SIZE = 40
 # number of tiles on screen in each axis
 num_tiles = 23
 # threshold for adaptive fill
