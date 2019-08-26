@@ -83,6 +83,12 @@ def replace_color(img, orig_color, new_color, dist=4):
                 img.set_at((x, y), new_color)  # Set the color of the pixel.
 
 
+def draw_room(color=(255, 255, 255)):
+    pg.draw.polygon(room, color, ((0, 0), (22.5 * SIZE, 0), (22.5 * SIZE, 14 * SIZE), (18 * SIZE, 14 * SIZE), (18 * SIZE, 22 * SIZE), (0, 22 * SIZE)), 2)
+    pg.draw.line(room, color, (3 * SIZE, 0), (3 * SIZE, 22 * SIZE), 2)
+    pg.draw.line(room, color, (18 * SIZE, 0), (18 * SIZE, 22 * SIZE), 2)
+
+
 pg.init()
 pg.font.init()
 
@@ -139,6 +145,7 @@ print('to fill a tile, select it, select a color and then click inside the tile.
 print('l to load saved pattern')
 print('s to save current pattern (colors will not be saved)')
 print('d to duplicate a tile')
+print('t to draw tile lines')
 
 done = False
 rotation = 0
@@ -215,6 +222,12 @@ while not done:
                 images.append(images[cimagenum].copy())
                 orig_images.append(orig_images[cimagenum].copy())
                 draw_tile_list()
+            if event.key == pg.K_t:
+                for cx in range(num_tiles):
+                    pg.draw.line(room, (255, 255, 255), (cx * SIZE, 0), (cx * SIZE, 22 * SIZE), 2)
+                for cy in range(num_tiles):
+                    pg.draw.line(room, (255, 255, 255), (0, cy * SIZE), (22 * SIZE, cy * SIZE), 2)
+                draw_room(color=(100, 100, 100))
         elif pg.mouse.get_pressed()[0]:
             pos = pg.mouse.get_pos()
             if pos[0] < max_map_x:
